@@ -15,7 +15,8 @@ import 'package:on_device_ai/utils/student_data.dart';
 class GemmaService extends ChangeNotifier {
   // Gemma 4 E2B via LiteRT-LM — public, no HuggingFace auth needed.
   // Android only. iOS support pending Google's LiteRT-LM Swift API.
-
+  static const String _modelUrl =
+      'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm';
   static const int _maxTokens = 4096;
   static const int _maxGenerationTokens = 2048;
 
@@ -121,11 +122,25 @@ class GemmaService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Flutter assets
       await FlutterGemma.installModel(
-        modelType: ModelType.gemmaIt,
-        fileType: ModelFileType.litertlm,
-      ).fromBundled('gemma4e2b.litertlm').install();
+            modelType: ModelType.gemmaIt,
+            fileType: ModelFileType.litertlm,
+          )
+          .fromNetwork(
+            _modelUrl,
+            //TODO add your token
+            token: "Your_Token",
+          )
+          .withProgress((progress) {
+            _downloadProgress = progress / 100.0;
+            notifyListeners();
+          })
+          .install();
+      // Flutter assets
+      // await FlutterGemma.installModel(
+      //   modelType: ModelType.gemmaIt,
+      //   fileType: ModelFileType.litertlm,
+      // ).fromBundled('gemma4e2b.litertlm').install();
       _state = GemmaServiceState.downloaded;
       notifyListeners();
       // downloadEmbeddingModel();
